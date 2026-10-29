@@ -1,0 +1,20 @@
+{
+  "name": "kang-bahar-coffee",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Kang Bahar Coffee — situs kedai kopi dengan pemesanan lewat QR meja, dashboard admin, dan papan barista.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && wrangler dev",
+    "db:local": "wrangler d1 execute kang-bahar --local --file=db/schema.sql"
+  },
+  "dependencies": {
+    "@freebuff/auth": "^0.1.0",
+    "qrcode-generator": "^1.4.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "wrangler": "^4.0.0"
+  }
+}

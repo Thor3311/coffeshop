@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kang-bahar-coffee",
+  "main": "dist/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "vars": {
+    "FREEBUFF_CLIENT_ID": "09b0f2f2-a903-44f9-899d-0707c38d6040",
+    "FREEBUFF_ISSUER": "https://freebuff.com/oidc",
+    "APP_ORIGIN": "http://localhost:8787"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kang-bahar",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+dist/
+public/assets/qrcode.js
+
+# rahasia lokal
+.env
+.env.*
+.dev.vars
+*.log

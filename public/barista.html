@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Papan Barista — Kang Bahar Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="container">
+    <a href="/" class="brand" style="color:#fdf3e6">
+      <svg viewBox="0 0 64 64" fill="none" style="width:36px;height:36px;color:#f6e3c8">
+        <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M22 14c0-3 3-3 3-6M31 14c0-3 3-3 3-6M40 14c0-3 3-3 3-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <span><span class="brand-name" style="font-size:.95rem">Kang Bahar</span>
+      <span class="brand-sub" style="font-size:1rem">Coffee</span></span>
+    </a>
+    <div>
+      <div class="judul">Papan Barista</div>
+      <div class="sub" id="statusSesi">Memeriksa sesi&hellip;</div>
+    </div>
+    <div class="kanan" id="aksiSesi"></div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="container">
+
+    <div id="gerbang" class="masuk-kartu">
+      <div class="skeleton">Memuat&hellip;</div>
+    </div>
+
+    <div id="papan" class="hidden">
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card"><div class="angka" id="statBaru">0</div><div class="label">Pesanan baru</div></div>
+        <div class="stat-card"><div class="angka" id="statDiproses">0</div><div class="label">Sedang dibuat</div></div>
+        <div class="stat-card"><div class="angka" id="statSiap">0</div><div class="label">Siap diantar</div></div>
+        <div class="stat-card"><div class="angka" id="statBayar">0</div><div class="label">Perlu verifikasi bayar</div></div>
+      </div>
+
+      <div class="board">
+        <section class="kolom">
+          <header><h3>Baru</h3><span class="badge badge-amber" id="hitBaru">0</span></header>
+          <div id="kolomBaru"><div class="skeleton">Memuat&hellip;</div></div>
+        </section>
+        <section class="kolom">
+          <header><h3>Sedang dibuat</h3><span class="badge badge-neutral" id="hitDiproses">0</span></header>
+          <div id="kolomDiproses"></div>
+        </section>
+        <section class="kolom">
+          <header><h3>Siap diantar</h3><span class="badge badge-green" id="hitSiap">0</span></header>
+          <div id="kolomSiap"></div>
+        </section>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  const el = (id) => document.getElementById(id)
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  let timer = null
+  let kodeDikenal = null
+  let sesi = null
+
+  async function mulai() {
+    try {
+      sesi = await KB.sesiStaf()
+    } catch {
+      sesi = { login: false }
+    }
+    renderGerbang()
+  }
+
+  function tombolKeluar() {
+    return `<button class="btn btn-sm btn-ghost" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)" id="tombolKeluar" type="button">Keluar</button>`
+  }
+
+  function pasangKeluar() {
+    const b = el('tombolKeluar')
+    if (!b) return
+    b.addEventListener('click', async () => {
+      b.disabled = true
+      try {
+        await KB.api('/api/staf/keluar', { method: 'POST', body: {} })
+      } catch {}
+      if (sesi && sesi.via === 'freebuff') {
+        const form = document.createElement('form')
+        form.method = 'post'
+        form.action = '/auth/freebuff/signout'
+        document.body.appendChild(form)
+        form.submit()
+        return
+      }
+      location.reload()
+    })
+  }
+
+  function formMasuk() {
+    el('statusSesi').textContent = 'Belum masuk'
+    el('aksiSesi').innerHTML = ''
+    el('papan').classList.add('hidden')
+    el('gerbang').classList.remove('hidden')
+    el('gerbang').innerHTML = `
+      <h2 style="font-size:1.6rem">Masuk staf</h2>
+      <p class="muted" style="margin:10px 0 18px">Papan barista hanya untuk staf Kang Bahar Coffee.</p>
+      <form id="formMasuk" style="text-align:left">
+        <label class="field">Username<input type="text" id="loginUser" autocomplete="username" required /></label>
+        <label class="field">Kata sandi<input type="password" id="loginPass" autocomplete="current-password" required /></label>
+        <button class="btn btn-primary btn-block" type="submit" id="tombolMasuk">Masuk</button>
+      </form>
+      <p class="muted" style="font-size:.82rem;margin-top:14px">Staf yang diundang lewat Freebuff?
+        <a href="/auth/freebuff/signin?returnTo=/barista" style="text-decoration:underline">Masuk dengan Freebuff</a>.</p>`
+    el('formMasuk').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const tombol = el('tombolMasuk')
+      tombol.disabled = true
+      tombol.textContent = 'Memeriksa…'
+      try {
+        await KB.api('/api/staf/masuk', {
+          method: 'POST',
+          body: { username: el('loginUser').value.trim(), password: el('loginPass').value },
+        })
+        sesi = await KB.sesiStaf()
+        renderGerbang()
+      } catch (err) {
+        KB.toast(err.message, 'error')
+        tombol.disabled = false
+        tombol.textContent = 'Masuk'
+      }
+    })
+  }
+
+  function renderGerbang() {
+    if (!sesi.login) {
+      formMasuk()
+      return
+    }
+
+    if (!sesi.terdaftar) {
+      el('statusSesi').textContent = (sesi.adaAdmin ? 'Belum terdaftar' : 'Belum ada admin')
+      el('aksiSesi').innerHTML = tombolKeluar()
+      pasangKeluar()
+      el('papan').classList.add('hidden')
+      el('gerbang').classList.remove('hidden')
+      el('gerbang').innerHTML = sesi.adaAdmin
+        ? `<h2 style="font-size:1.6rem">Akun belum terdaftar</h2>
+           <p class="muted" style="margin:10px 0 18px">Masukkan kode undangan dari admin untuk membuka papan barista.</p>
+           <form id="formUndangan">
+             <input type="text" id="kodeUndangan" placeholder="Kode undangan" style="text-align:center;letter-spacing:.2em;text-transform:uppercase" />
+             <button class="btn btn-primary btn-block" type="submit" style="margin-top:12px">Gabung sebagai staf</button>
+           </form>`
+        : `<h2 style="font-size:1.6rem">Belum ada admin</h2>
+           <p class="muted" style="margin:10px 0 18px">Buka portal admin untuk mengklaim akses admin pertama, lalu buat kode undangan untuk barista.</p>
+           <a class="btn btn-primary" href="/admin">Buka portal admin</a>`
+      const form = el('formUndangan')
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault()
+          const kode = el('kodeUndangan').value.trim().toUpperCase()
+          if (!kode) return
+          try {
+            await KB.api('/api/staf/gabung', { method: 'POST', body: { kode } })
+            KB.toast('Berhasil bergabung sebagai staf.', 'ok')
+            sesi = await KB.sesiStaf()
+            renderGerbang()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+          }
+        })
+      }
+      return
+    }
+
+    el('statusSesi').textContent = 'Masuk sebagai ' + (sesi.nama || 'Staf') + ' · ' + sesi.peran
+    el('aksiSesi').innerHTML =
+      (sesi.peran === 'admin' ? '<a class="btn btn-sm btn-light" href="/admin">Portal admin</a> ' : '') + tombolKeluar()
+    pasangKeluar()
+    el('gerbang').classList.add('hidden')
+    el('papan').classList.remove('hidden')
+    muat()
+    if (timer) clearInterval(timer)
+    timer = setInterval(muat, 4000)
+  }
+
+  async function muat() {
+    try {
+      const { pesanan } = await KB.api('/api/pesanan?filter=aktif')
+      const baru = pesanan.filter((p) => p.status === 'baru')
+      const diproses = pesanan.filter((p) => p.status === 'diproses')
+      const siap = pesanan.filter((p) => p.status === 'siap')
+      const perluVerifikasi = pesanan.filter((p) => p.status_bayar === 'verifikasi')
+
+      if (kodeDikenal) {
+        const tambahan = pesanan.filter((p) => !kodeDikenal.has(p.kode))
+        if (tambahan.length) KB.toast('Pesanan baru: ' + tambahan.map((p) => p.kode).join(', '), 'ok')
+      }
+      kodeDikenal = new Set(pesanan.map((p) => p.kode))
+
+      el('statBaru').textContent = baru.length
+      el('statDiproses').textContent = diproses.length
+      el('statSiap').textContent = siap.length
+      el('statBayar').textContent = perluVerifikasi.length
+      el('hitBaru').textContent = baru.length
+      el('hitDiproses').textContent = diproses.length
+      el('hitSiap').textContent = siap.length
+
+      el('kolomBaru').innerHTML = baru.length ? baru.map(kartu).join('') : '<p class="muted">Belum ada pesanan baru.</p>'
+      el('kolomDiproses').innerHTML = diproses.length ? diproses.map(kartu).join('') : '<p class="muted">Belum ada yang dikerjakan.</p>'
+      el('kolomSiap').innerHTML = siap.length ? siap.map(kartu).join('') : '<p class="muted">Belum ada yang siap.</p>'
+      pasangAksi()
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) {
+        sesi = await KB.sesiStaf().catch(() => ({ login: false }))
+        renderGerbang()
+      } else {
+        KB.toast(err.message, 'error')
+      }
+    }
+  }
+
+  function kartu(p) {
+    const aksi = []
+    if (p.status === 'baru') aksi.push(['diproses', 'Terima &amp; buat', 'btn-primary'])
+    if (p.status === 'diproses') aksi.push(['siap', 'Tandai siap', 'btn-primary'])
+    if (p.status === 'siap') aksi.push(['selesai', 'Sudah diantar', 'btn-primary'])
+    if (p.status_bayar !== 'lunas') aksi.push(['lunas', 'Tandai lunas', 'btn-ghost'])
+    aksi.push(['batal', 'Batalkan', 'btn-danger'])
+
+    return `<article class="order-card ${p.status === 'baru' ? 'baru' : ''}">
+      <div class="top">
+        <span class="kode">${esc(p.kode)}</span>
+        <span class="badge badge-neutral">${esc(p.meja || 'Tanpa meja')}</span>
+        <span class="waktu">${KB.lama(p.dibuat)}</span>
+      </div>
+      <div class="muted" style="font-size:.85rem">${esc(p.nama)} · ${KB.jam(p.dibuat)}</div>
+      <ul>${p.item.map((i) => `<li><strong>${i.jumlah}&times;</strong> ${esc(i.nama)}${i.catatan ? ` <em class="muted">(${esc(i.catatan)})</em>` : ''}</li>`).join('')}</ul>
+      ${p.catatan ? `<div class="muted" style="font-size:.85rem">Catatan: ${esc(p.catatan)}</div>` : ''}
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+        <span class="badge ${KB.kelasBayar(p.status_bayar)}">${KB.labelBayar(p.status_bayar)} · ${esc(p.metode_bayar)}</span>
+        <strong style="margin-left:auto">${KB.rupiah(p.total)}</strong>
+      </div>
+      <div class="aksi">
+        ${aksi
+          .map(
+            ([aksiNama, label, kelas]) =>
+              `<button class="btn btn-sm ${kelas}" data-id="${p.id}" data-aksi="${aksiNama}">${label}</button>`,
+          )
+          .join('')}
+      </div>
+    </article>`
+  }
+
+  function pasangAksi() {
+    el('papan').querySelectorAll('button[data-aksi]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = b.dataset.id
+        const aksi = b.dataset.aksi
+        b.disabled = true
+        try {
+          if (aksi === 'lunas') {
+            await KB.api('/api/pesanan/' + id, { method: 'PATCH', body: { status_bayar: 'lunas' } })
+          } else {
+            await KB.api('/api/pesanan/' + id, { method: 'PATCH', body: { status: aksi } })
+          }
+          await muat()
+        } catch (err) {
+          KB.toast(err.message, 'error')
+          b.disabled = false
+        }
+      }),
+    )
+  }
+
+  mulai()
+})()
+</script>
+</body>
+</html>

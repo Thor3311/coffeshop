@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lacak Pesanan — Kang Bahar Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="container">
+    <a href="/" class="brand" style="color:#fdf3e6">
+      <svg viewBox="0 0 64 64" fill="none" style="width:38px;height:38px;color:#f6e3c8">
+        <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M22 14c0-3 3-3 3-6M31 14c0-3 3-3 3-6M40 14c0-3 3-3 3-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <span><span class="brand-name" style="font-size:1rem">Kang Bahar</span>
+      <span class="brand-sub" style="font-size:1.05rem">Coffee</span></span>
+    </a>
+    <div class="kanan"><a class="btn btn-sm btn-ghost" href="/meja" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)">Pesan lagi</a></div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="container">
+    <div id="cariKode" class="card hidden" style="max-width:480px;margin:30px auto">
+      <h3>Lacak pesanan</h3>
+      <p class="muted" style="font-size:.9rem;margin:6px 0 14px">Masukkan kode pesanan yang tertera di struk atau halaman pembayaran.</p>
+      <form id="formCari">
+        <label class="field">Kode pesanan
+          <input type="text" id="inputKode" placeholder="KB-XXXX" autocomplete="off" />
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Lihat status</button>
+      </form>
+    </div>
+
+    <div id="kartuPesanan" class="card hidden" style="max-width:680px;margin:10px auto">
+      <div class="center">
+        <div class="eyebrow">Status pesanan</div>
+        <div class="kode-pesanan" id="kode">&mdash;</div>
+        <div class="muted" id="ringkas"></div>
+      </div>
+      <div class="status-track" id="trek"></div>
+      <div class="center muted" id="statusTeks" style="font-size:.9rem"></div>
+
+      <div style="margin-top:22px">
+        <div class="eyebrow">Rincian</div>
+        <div id="daftarItem" style="display:grid;gap:10px;margin-top:8px"></div>
+        <div class="ringkas" style="margin-top:14px">
+          <div class="baris total"><span>Total</span><span id="total"></span></div>
+        </div>
+      </div>
+
+      <div id="panelBayar" style="margin-top:18px"></div>
+      <p class="muted center" style="font-size:.82rem;margin-top:18px">Halaman ini memperbarui status secara otomatis setiap 5 detik.</p>
+    </div>
+
+    <div id="galat" class="card hidden" style="max-width:480px;margin:30px auto;text-align:center">
+      <h3>Pesanan tidak ditemukan</h3>
+      <p class="muted" style="margin:8px 0 16px">Periksa kembali kode pesananmu.</p>
+      <a class="btn btn-primary" href="/pesanan">Cari kode lain</a>
+    </div>
+  </div>
+</main>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/qrcode.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search)
+  let kode = (params.get('kode') || '').toUpperCase()
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const URUTAN = ['baru', 'diproses', 'siap', 'selesai']
+  const LABEL = { baru: 'Dipesan', diproses: 'Dibuat', siap: 'Siap', selesai: 'Selesai' }
+  const el = (id) => document.getElementById(id)
+  let timer = null
+
+  if (!kode) {
+    el('cariKode').classList.remove('hidden')
+    el('formCari').addEventListener('submit', (e) => {
+      e.preventDefault()
+      const nilai = el('inputKode').value.trim().toUpperCase()
+      if (!nilai) return
+      location.href = '/pesanan?kode=' + encodeURIComponent(nilai)
+    })
+    return
+  }
+
+  muat()
+  timer = setInterval(muat, 5000)
+
+  async function muat() {
+    try {
+      const { pesanan: p, item } = await KB.api('/api/pesanan/' + encodeURIComponent(kode))
+      el('cariKode').classList.add('hidden')
+      el('galat').classList.add('hidden')
+      el('kartuPesanan').classList.remove('hidden')
+      render(p, item)
+    } catch (err) {
+      if (err.status === 404) {
+        el('kartuPesanan').classList.add('hidden')
+        el('galat').classList.remove('hidden')
+        if (timer) clearInterval(timer)
+      } else {
+        KB.toast(err.message, 'error')
+      }
+    }
+  }
+
+  function render(p, items) {
+    el('kode').textContent = p.kode
+    el('ringkas').textContent = `${p.meja || ''} · atas nama ${p.nama}`
+    el('total').textContent = KB.rupiah(p.total)
+    el('daftarItem').innerHTML = items
+      .map(
+        (i) => `<div class="baris" style="display:flex;justify-content:space-between;gap:12px">
+          <span>${esc(i.nama)} <span class="muted">&times; ${i.jumlah}</span></span>
+          <span>${KB.rupiah(i.harga * i.jumlah)}</span></div>`,
+      )
+      .join('')
+
+    const posisi = URUTAN.indexOf(p.status)
+    el('trek').innerHTML = URUTAN.map((s, i) => {
+      const kelas = p.status === 'batal' ? '' : i < posisi ? 'lewat' : i === posisi ? 'kini' : ''
+      return `<div class="titik ${kelas}"><div class="batang"></div><div class="label">${LABEL[s]}</div></div>`
+    }).join('')
+    el('statusTeks').textContent =
+      p.status === 'batal'
+        ? 'Pesanan dibatalkan. Hubungi kasir bila ada pertanyaan.'
+        : KB.labelStatus(p.status) + ' · diperbarui ' + KB.jam(p.diubah)
+
+    if (p.status_bayar === 'lunas') {
+      el('panelBayar').innerHTML = `<div class="card" style="background:var(--green-soft);border-color:#cfdec9">
+        <strong>Pembayaran lunas.</strong> <span class="muted">Terima kasih.</span></div>`
+      return
+    }
+    if (p.metode_bayar === 'tunai') {
+      el('panelBayar').innerHTML = `<div class="card" style="background:#fdf6e8">
+        <strong>Bayar di kasir.</strong> Tunjukkan kode ${esc(p.kode)} dan bayar ${KB.rupiah(p.total)}.
+        <div style="margin-top:8px"><span class="badge ${KB.kelasBayar(p.status_bayar)}">${KB.labelBayar(p.status_bayar)}</span></div></div>`
+      return
+    }
+
+    const qr = window.qrcodegen ? window.qrcodegen.buatQrSvg('KANGBAHAR|' + p.kode + '|' + p.total, 200) : ''
+    el('panelBayar').innerHTML = `<div class="card">
+      <strong>Pembayaran ${esc(p.metode_bayar === 'qris' ? 'QRIS' : 'e-wallet')}</strong>
+      <div class="qr-box" style="margin-top:10px">${qr}<strong>${KB.rupiah(p.total)}</strong></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
+        <span class="badge ${KB.kelasBayar(p.status_bayar)}">${KB.labelBayar(p.status_bayar)}</span>
+        ${p.status_bayar === 'belum' ? '<button class="btn btn-sm btn-primary" id="btnBayar">Saya sudah bayar</button>' : ''}
+      </div></div>`
+    const btn = el('btnBayar')
+    if (btn) {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true
+        try {
+          await KB.api('/api/pesanan/' + encodeURIComponent(p.kode) + '/bayar', { method: 'POST', body: {} })
+          KB.toast('Konfirmasi terkirim. Menunggu verifikasi kasir.', 'ok')
+          muat()
+        } catch (err) {
+          KB.toast(err.message, 'error')
+          btn.disabled = false
+        }
+      })
+    }
+  }
+})()
+</script>
+</body>
+</html>

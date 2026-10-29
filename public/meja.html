@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pilih Meja — Kang Bahar Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+<header class="app-header">
+  <div class="container">
+    <a href="/" class="brand" style="color:#fdf3e6">
+      <svg viewBox="0 0 64 64" fill="none" style="width:38px;height:38px;color:#f6e3c8">
+        <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M22 14c0-3 3-3 3-6M31 14c0-3 3-3 3-6M40 14c0-3 3-3 3-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <span><span class="brand-name" style="font-size:1rem">Kang Bahar</span>
+      <span class="brand-sub" style="font-size:1.05rem">Coffee</span></span>
+    </a>
+    <div class="kanan">
+      <a class="btn btn-sm btn-ghost" href="/" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)">Beranda</a>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="container">
+    <div class="section-head" style="max-width:640px">
+      <div class="eyebrow">Mulai Pesan</div>
+      <h2 style="font-size:clamp(1.9rem,3.4vw,2.6rem)">Pilih meja, atau pindai QR di meja</h2>
+      <p>Kode QR di setiap meja langsung membuka halaman pesanan meja tersebut. Daftar di bawah
+         ini kami sediakan untuk memesan tanpa memindai QR.</p>
+    </div>
+    <div class="grid-4" id="daftarMeja">
+      <div class="skeleton">Memuat daftar meja&hellip;</div>
+    </div>
+    <div class="card" style="margin-top:26px;background:#f9f0e2;border-style:dashed">
+      <h3 style="font-size:1.05rem">Belum memindai QR?</h3>
+      <p style="margin-top:6px">Setiap meja memiliki kode QR tercetak di tatakan gelas. Jika QR tidak
+         terbaca, minta bantuan kasir &mdash; mereka bisa membuka pesanan langsung dari portal staf.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="copyright">&copy; 2026 Kang Bahar Coffee. All Rights Reserved.</div>
+    <div class="copyright"><a href="/admin">Portal staf</a></div>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+  (async function () {
+    const wadah = document.getElementById('daftarMeja')
+    try {
+      const { meja } = await KB.api('/api/meja')
+      wadah.innerHTML = meja
+        .map(
+          (m) => `
+        <a class="card" href="/pesan?meja=${encodeURIComponent(m.kode)}" style="display:block">
+          <div class="eyebrow" style="margin-bottom:6px">${esc(m.kode)}</div>
+          <h3 style="font-size:1.3rem">${esc(m.label)}</h3>
+          <p style="margin-top:6px">Pesan dari meja ini &rarr;</p>
+        </a>`,
+        )
+        .join('')
+    } catch {
+      wadah.innerHTML = '<div class="skeleton">Daftar meja belum bisa dimuat.</div>'
+    }
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+    }
+  })()
+</script>
+</body>
+</html>

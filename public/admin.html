@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portal Admin — Kang Bahar Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="container">
+    <a href="/" class="brand" style="color:#fdf3e6">
+      <svg viewBox="0 0 64 64" fill="none" style="width:36px;height:36px;color:#f6e3c8">
+        <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M22 14c0-3 3-3 3-6M31 14c0-3 3-3 3-6M40 14c0-3 3-3 3-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <span><span class="brand-name" style="font-size:.95rem">Kang Bahar</span>
+      <span class="brand-sub" style="font-size:1rem">Coffee</span></span>
+    </a>
+    <div>
+      <div class="judul">Portal Admin</div>
+      <div class="sub" id="statusSesi">Memeriksa sesi&hellip;</div>
+    </div>
+    <div class="kanan" id="aksiSesi"></div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="container">
+    <div id="gerbang" class="masuk-kartu"><div class="skeleton">Memuat&hellip;</div></div>
+
+    <div id="isi" class="hidden">
+      <div class="tabs-baris" id="tabBar">
+        <button data-tab="ringkasan" class="active">Ringkasan</button>
+        <button data-tab="pesanan">Pesanan</button>
+        <button data-tab="menu">Menu</button>
+        <button data-tab="meja">Meja &amp; QR</button>
+        <button data-tab="staf">Staf</button>
+      </div>
+
+      <!-- RINGKASAN -->
+      <section id="tab-ringkasan" class="tab-panel">
+        <div class="stat-cards">
+          <div class="stat-card"><div class="label">Pendapatan hari ini</div><div class="angka" id="statPendapatan">&mdash;</div></div>
+          <div class="stat-card"><div class="label">Pesanan hari ini</div><div class="angka" id="statPesanan">&mdash;</div></div>
+          <div class="stat-card"><div class="label">Pesanan aktif</div><div class="angka" id="statAktif">&mdash;</div></div>
+          <div class="stat-card"><div class="label">Perlu verifikasi bayar</div><div class="angka" id="statVerifikasi">&mdash;</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Menu terlaris hari ini</h3>
+            <p class="sub">Berdasarkan jumlah item terjual sejak pukul 00.00 WIB.</p>
+            <div id="terlaris"><div class="skeleton">Memuat&hellip;</div></div>
+          </div>
+          <div class="panel">
+            <h3>Status pesanan &amp; meja</h3>
+            <p class="sub">Ringkasan operasional hari ini.</p>
+            <div id="ringkasStatus"><div class="skeleton">Memuat&hellip;</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESANAN -->
+      <section id="tab-pesanan" class="tab-panel hidden">
+        <div class="tabs-baris" id="filterPesanan">
+          <button data-filter="aktif" class="active">Aktif</button>
+          <button data-filter="hari">Hari ini</button>
+          <button data-filter="selesai">Selesai / batal</button>
+          <button data-filter="semua">Semua</button>
+        </div>
+        <div id="tabelPesanan"><div class="skeleton">Memuat&hellip;</div></div>
+      </section>
+
+      <!-- MENU -->
+      <section id="tab-menu" class="tab-panel hidden">
+        <div class="panel">
+          <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <h3>Kelola menu</h3>
+              <p class="sub" style="margin:0">Ubah harga, tandai habis, atau tambah menu baru.</p>
+            </div>
+            <button class="btn btn-primary" id="tombolTambahMenu">Tambah menu</button>
+          </div>
+        </div>
+        <div id="tabelMenu"><div class="skeleton">Memuat&hellip;</div></div>
+      </section>
+
+      <!-- MEJA -->
+      <section id="tab-meja" class="tab-panel hidden">
+        <div class="panel no-print">
+          <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <h3>Meja &amp; kode QR</h3>
+              <p class="sub" style="margin:0">Cetak kartu QR dan letakkan di tatakan gelas setiap meja.</p>
+            </div>
+            <form id="formMeja" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+              <label class="field" style="margin:0">Nomor meja
+                <input type="number" id="nomorMeja" min="1" max="999" style="width:130px" placeholder="11" />
+              </label>
+              <button class="btn btn-primary" type="submit">Tambah meja</button>
+              <button class="btn btn-ghost" type="button" id="cetakQr">Cetak QR</button>
+            </form>
+          </div>
+        </div>
+        <div id="gridMeja" class="cetak-grid"><div class="skeleton">Memuat&hellip;</div></div>
+      </section>
+
+      <!-- STAF -->
+      <section id="tab-staf" class="tab-panel hidden">
+        <div class="panel">
+          <h3>Undang staf</h3>
+          <p class="sub">Kode undangan berlaku sekali pakai. Barista memakainya di halaman Papan Barista.</p>
+          <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <label class="field" style="margin:0;min-width:180px">Peran
+              <select id="peranUndangan">
+                <option value="barista">Barista</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <button class="btn btn-primary" id="buatUndangan">Buat kode undangan</button>
+            <div id="hasilUndangan"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Akun staf (username &amp; kata sandi)</h3>
+          <p class="sub">Akun ini dipakai untuk masuk ke portal admin dan papan barista tanpa akun Freebuff.</p>
+          <form id="formKredensial" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <label class="field" style="margin:0;min-width:150px">Username
+              <input type="text" id="kredUser" placeholder="barista1" autocomplete="off" required />
+            </label>
+            <label class="field" style="margin:0;min-width:150px">Nama
+              <input type="text" id="kredNama" placeholder="Nama staf" autocomplete="off" />
+            </label>
+            <label class="field" style="margin:0;min-width:150px">Kata sandi
+              <input type="password" id="kredPass" minlength="6" autocomplete="new-password" required />
+            </label>
+            <label class="field" style="margin:0;min-width:130px">Peran
+              <select id="kredPeran"><option value="barista">Barista</option><option value="admin">Admin</option></select>
+            </label>
+            <button class="btn btn-primary" type="submit">Simpan akun</button>
+          </form>
+          <div id="tabelKredensial" style="margin-top:18px"><div class="skeleton">Memuat&hellip;</div></div>
+        </div>
+
+        <div class="panel">
+          <h3>Staf dengan akun Freebuff</h3>
+          <p class="sub">Staf yang masuk lewat kode undangan Freebuff. Hapus akses bila sudah tidak bertugas.</p>
+          <div id="tabelStaf"><div class="skeleton">Memuat&hellip;</div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- modal menu -->
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="modalMenu">
+  <div class="box">
+    <h3 style="font-size:1.25rem" id="judulModalMenu">Tambah menu</h3>
+    <form id="formMenu" style="margin-top:14px">
+      <input type="hidden" id="menuId" />
+      <label class="field">Nama menu<input type="text" id="menuNama" maxlength="60" required /></label>
+      <label class="field">Kategori
+        <select id="menuKategori">
+          <option>Kopi</option><option>Non-Kopi</option><option>Makanan</option>
+        </select>
+      </label>
+      <label class="field">Deskripsi<input type="text" id="menuDeskripsi" maxlength="200" /></label>
+      <label class="field">Harga (Rp)<input type="number" id="menuHarga" min="1000" step="500" required /></label>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button type="button" class="btn btn-ghost" id="batalMenu" style="flex:1">Batal</button>
+        <button type="submit" class="btn btn-primary" style="flex:2">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/qrcode.js"></script>
+<script>
+(function () {
+  const el = (id) => document.getElementById(id)
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const state = { sesi: null, tab: 'ringkasan', filter: 'aktif', menu: [], meja: [], kredensial: [], timer: null }
+
+  function tombolKeluar() {
+    return `<a class="btn btn-sm btn-light" href="/barista">Papan barista</a>
+      <button class="btn btn-sm btn-ghost" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)" id="tombolKeluar" type="button">Keluar</button>`
+  }
+
+  function pasangKeluar() {
+    const b = el('tombolKeluar')
+    if (!b) return
+    b.addEventListener('click', async () => {
+      b.disabled = true
+      try {
+        await KB.api('/api/staf/keluar', { method: 'POST', body: {} })
+      } catch {}
+      if (state.sesi && state.sesi.via === 'freebuff') {
+        const form = document.createElement('form')
+        form.method = 'post'
+        form.action = '/auth/freebuff/signout'
+        document.body.appendChild(form)
+        form.submit()
+        return
+      }
+      location.reload()
+    })
+  }
+
+  function formMasuk(pesan) {
+    el('statusSesi').textContent = 'Belum masuk'
+    el('aksiSesi').innerHTML = ''
+    el('isi').classList.add('hidden')
+    el('gerbang').classList.remove('hidden')
+    el('gerbang').innerHTML = `
+      <h2 style="font-size:1.6rem">Masuk staf</h2>
+      <p class="muted" style="margin:10px 0 18px">${pesan}</p>
+      <form id="formMasuk" style="text-align:left">
+        <label class="field">Username<input type="text" id="loginUser" autocomplete="username" required /></label>
+        <label class="field">Kata sandi<input type="password" id="loginPass" autocomplete="current-password" required /></label>
+        <button class="btn btn-primary btn-block" type="submit" id="tombolMasuk">Masuk</button>
+      </form>
+      <p class="muted" style="font-size:.82rem;margin-top:14px">Staf yang diundang lewat Freebuff?
+        <a href="/auth/freebuff/signin?returnTo=/admin" style="text-decoration:underline">Masuk dengan Freebuff</a>.</p>`
+    el('formMasuk').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const tombol = el('tombolMasuk')
+      tombol.disabled = true
+      tombol.textContent = 'Memeriksa…'
+      try {
+        await KB.api('/api/staf/masuk', {
+          method: 'POST',
+          body: { username: el('loginUser').value.trim(), password: el('loginPass').value },
+        })
+        state.sesi = await KB.sesiStaf()
+        renderGerbang()
+      } catch (err) {
+        KB.toast(err.message, 'error')
+        tombol.disabled = false
+        tombol.textContent = 'Masuk'
+      }
+    })
+  }
+
+  async function mulai() {
+    try {
+      state.sesi = await KB.sesiStaf()
+    } catch {
+      state.sesi = { login: false }
+    }
+    renderGerbang()
+  }
+
+  function renderGerbang() {
+    const s = state.sesi
+    if (!s.login) {
+      formMasuk('Gunakan akun staf kedai.')
+      return
+    }
+
+    if (!s.terdaftar) {
+      el('statusSesi').textContent = 'Belum terdaftar'
+      el('aksiSesi').innerHTML = tombolKeluar()
+      pasangKeluar()
+      el('isi').classList.add('hidden')
+      el('gerbang').classList.remove('hidden')
+      el('gerbang').innerHTML = s.adaAdmin
+        ? `<h2 style="font-size:1.6rem">Akun belum terdaftar sebagai staf</h2>
+           <p class="muted" style="margin:10px 0 18px">Minta kode undangan dari admin, lalu masukkan di halaman Papan Barista.</p>
+           <a class="btn btn-primary" href="/barista">Buka Papan Barista</a>`
+        : `<h2 style="font-size:1.6rem">Klaim akses admin pertama</h2>
+           <p class="muted" style="margin:10px 0 18px">Belum ada staf terdaftar. Akun yang mengklaim sekarang menjadi admin utama kedai.</p>
+           <button class="btn btn-primary" id="klaimAdmin">Klaim sebagai admin</button>`
+      const klaim = el('klaimAdmin')
+      if (klaim) {
+        klaim.addEventListener('click', async () => {
+          klaim.disabled = true
+          try {
+            await KB.api('/api/staf/klaim-admin', { method: 'POST', body: {} })
+            KB.toast('Akses admin aktif.', 'ok')
+            state.sesi = await KB.sesiStaf()
+            renderGerbang()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            klaim.disabled = false
+          }
+        })
+      }
+      return
+    }
+
+    if (s.peran !== 'admin') {
+      el('statusSesi').textContent = 'Masuk sebagai ' + (s.nama || 'Staf') + ' · barista'
+      el('aksiSesi').innerHTML = tombolKeluar()
+      pasangKeluar()
+      el('isi').classList.add('hidden')
+      el('gerbang').classList.remove('hidden')
+      el('gerbang').innerHTML = `<h2 style="font-size:1.6rem">Portal admin khusus admin</h2>
+        <p class="muted" style="margin:10px 0 18px">Akunmu terdaftar sebagai barista. Gunakan Papan Barista untuk mengelola pesanan.</p>
+        <a class="btn btn-primary" href="/barista">Buka Papan Barista</a>`
+      return
+    }
+
+    el('statusSesi').textContent = 'Masuk sebagai ' + (s.nama || 'Admin') + ' · admin'
+    el('aksiSesi').innerHTML = tombolKeluar()
+    pasangKeluar()
+    el('gerbang').classList.add('hidden')
+    el('isi').classList.remove('hidden')
+    muatTab()
+    if (state.timer) clearInterval(state.timer)
+    state.timer = setInterval(() => {
+      if (state.tab === 'ringkasan' || state.tab === 'pesanan') muatTab()
+    }, 8000)
+  }
+
+  /* ---------------- tab ---------------- */
+  el('tabBar').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-tab]')
+    if (!b) return
+    state.tab = b.dataset.tab
+    document.querySelectorAll('#tabBar button').forEach((x) => x.classList.toggle('active', x === b))
+    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('hidden', p.id !== 'tab-' + state.tab))
+    muatTab()
+  })
+
+  el('filterPesanan').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-filter]')
+    if (!b) return
+    state.filter = b.dataset.filter
+    document.querySelectorAll('#filterPesanan button').forEach((x) => x.classList.toggle('active', x === b))
+    muatPesanan()
+  })
+
+  async function muatTab() {
+    if (state.tab === 'ringkasan') await muatRingkasan()
+    if (state.tab === 'pesanan') await muatPesanan()
+    if (state.tab === 'menu') await muatMenu()
+    if (state.tab === 'meja') await muatMeja()
+    if (state.tab === 'staf') await muatStaf()
+  }
+
+  /* ---------------- ringkasan ---------------- */
+  async function muatRingkasan() {
+    try {
+      const r = await KB.api('/api/ringkasan')
+      el('statPendapatan').textContent = KB.rupiah(r.pendapatan_hari_ini)
+      el('statPesanan').textContent = r.pesanan_hari_ini
+      el('statAktif').textContent = r.pesanan_aktif
+      el('statVerifikasi').textContent = r.menunggu_verifikasi
+
+      el('terlaris').innerHTML = r.terlaris.length
+        ? r.terlaris
+            .map(
+              (t, i) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)">
+                <span><strong>${i + 1}.</strong> ${esc(t.nama)}</span>
+                <span class="muted">${t.jumlah} porsi</span></div>`,
+            )
+            .join('')
+        : '<p class="muted">Belum ada penjualan hari ini.</p>'
+
+      const label = { baru: 'Baru', diproses: 'Diproses', siap: 'Siap', selesai: 'Selesai', batal: 'Batal' }
+      el('ringkasStatus').innerHTML = `
+        ${r.per_status
+          .map(
+            (s) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)">
+              <span>${label[s.status] || esc(s.status)}</span><strong>${s.n}</strong></div>`,
+          )
+          .join('') || '<p class="muted">Belum ada pesanan hari ini.</p>'}
+        <div style="display:flex;justify-content:space-between;padding:12px 0 0">
+          <span>Meja terisi</span><strong>${r.meja_terisi} / ${r.total_meja}</strong>
+        </div>`
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  }
+
+  /* ---------------- pesanan ---------------- */
+  async function muatPesanan() {
+    try {
+      const { pesanan } = await KB.api('/api/pesanan?filter=' + encodeURIComponent(state.filter))
+      if (!pesanan.length) {
+        el('tabelPesanan').innerHTML = '<div class="panel muted">Belum ada pesanan pada filter ini.</div>'
+        return
+      }
+      el('tabelPesanan').innerHTML = `<table class="tabel">
+        <thead><tr>
+          <th>Kode</th><th>Meja</th><th>Pemesan</th><th>Item</th><th class="kanan">Total</th>
+          <th>Status</th><th>Bayar</th><th>Aksi</th>
+        </tr></thead>
+        <tbody>${pesanan.map(barisPesanan).join('')}</tbody></table>`
+      el('tabelPesanan').querySelectorAll('button[data-aksi]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          b.disabled = true
+          try {
+            if (b.dataset.aksi === 'lunas') {
+              await KB.api('/api/pesanan/' + b.dataset.id, { method: 'PATCH', body: { status_bayar: 'lunas' } })
+            } else {
+              await KB.api('/api/pesanan/' + b.dataset.id, { method: 'PATCH', body: { status: b.dataset.aksi } })
+            }
+            await muatPesanan()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  }
+
+  function barisPesanan(p) {
+    const statusBadge = {
+      baru: 'badge-amber',
+      diproses: 'badge-neutral',
+      siap: 'badge-green',
+      selesai: 'badge-green',
+      batal: 'badge-red',
+    }[p.status]
+    const aksi = []
+    if (p.status === 'baru') aksi.push(['diproses', 'Proses'])
+    if (p.status === 'diproses') aksi.push(['siap', 'Siap'])
+    if (p.status === 'siap') aksi.push(['selesai', 'Selesai'])
+    if (['baru', 'diproses', 'siap'].includes(p.status)) aksi.push(['batal', 'Batal'])
+    if (p.status_bayar !== 'lunas') aksi.push(['lunas', 'Lunas'])
+
+    return `<tr>
+      <td><strong>${esc(p.kode)}</strong><div class="muted" style="font-size:.78rem">${KB.jam(p.dibuat)}</div></td>
+      <td>${esc(p.meja || '-')}</td>
+      <td>${esc(p.nama)}</td>
+      <td style="max-width:230px">${p.item.map((i) => `${i.jumlah}&times; ${esc(i.nama)}`).join('<br>')}</td>
+      <td class="kanan">${KB.rupiah(p.total)}</td>
+      <td><span class="badge ${statusBadge}">${KB.labelStatus(p.status)}</span></td>
+      <td><span class="badge ${KB.kelasBayar(p.status_bayar)}">${KB.labelBayar(p.status_bayar)}</span>
+          <div class="muted" style="font-size:.75rem">${esc(p.metode_bayar)}</div></td>
+      <td><div class="aksi">${aksi
+        .map(([a, l]) => `<button class="btn btn-sm ${a === 'lunas' ? 'btn-ghost' : a === 'batal' ? 'btn-danger' : 'btn-primary'}" data-id="${p.id}" data-aksi="${a}">${l}</button>`)
+        .join('')}</div></td>
+    </tr>`
+  }
+
+  /* ---------------- menu ---------------- */
+  async function muatMenu() {
+    try {
+      const { menu } = await KB.api('/api/menu')
+      state.menu = menu
+      el('tabelMenu').innerHTML = `<table class="tabel">
+        <thead><tr><th>Nama</th><th>Kategori</th><th class="kanan">Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody>${menu
+          .map(
+            (m) => `<tr>
+              <td><strong>${esc(m.nama)}</strong><div class="muted" style="font-size:.8rem">${esc(m.deskripsi || '')}</div></td>
+              <td>${esc(m.kategori)}</td>
+              <td class="kanan">${KB.rupiah(m.harga)}</td>
+              <td><span class="badge ${m.tersedia ? 'badge-green' : 'badge-red'}">${m.tersedia ? 'Tersedia' : 'Habis'}</span></td>
+              <td><div class="aksi">
+                <button class="btn btn-sm btn-ghost" data-ubah="${m.id}">Ubah</button>
+                <button class="btn btn-sm btn-ghost" data-toggle="${m.id}">${m.tersedia ? 'Tandai habis' : 'Tandai tersedia'}</button>
+                <button class="btn btn-sm btn-danger" data-hapus="${m.id}">Hapus</button>
+              </div></td>
+            </tr>`,
+          )
+          .join('')}</tbody></table>`
+
+      el('tabelMenu').querySelectorAll('[data-ubah]').forEach((b) =>
+        b.addEventListener('click', () => bukaModalMenu(state.menu.find((m) => m.id === Number(b.dataset.ubah)))),
+      )
+      el('tabelMenu').querySelectorAll('[data-toggle]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const m = state.menu.find((x) => x.id === Number(b.dataset.toggle))
+          b.disabled = true
+          try {
+            await KB.api('/api/menu/' + m.id, { method: 'PATCH', body: { tersedia: !m.tersedia } })
+            await muatMenu()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+      el('tabelMenu').querySelectorAll('[data-hapus]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          if (!confirm('Hapus menu ini? Menu yang sudah pernah dipesan hanya akan disembunyikan.')) return
+          b.disabled = true
+          try {
+            const hasil = await KB.api('/api/menu/' + b.dataset.hapus, { method: 'DELETE' })
+            KB.toast(hasil.dinonaktifkan ? 'Menu disembunyikan karena pernah dipesan.' : 'Menu dihapus.', 'ok')
+            await muatMenu()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  }
+
+  function bukaModalMenu(m) {
+    el('judulModalMenu').textContent = m ? 'Ubah menu' : 'Tambah menu'
+    el('menuId').value = m ? m.id : ''
+    el('menuNama').value = m ? m.nama : ''
+    el('menuKategori').value = m ? m.kategori : 'Kopi'
+    el('menuDeskripsi').value = m ? m.deskripsi : ''
+    el('menuHarga').value = m ? m.harga : ''
+    el('overlay').classList.add('open')
+    el('modalMenu').classList.add('open')
+  }
+  function tutupModalMenu() {
+    el('overlay').classList.remove('open')
+    el('modalMenu').classList.remove('open')
+  }
+  el('batalMenu').addEventListener('click', tutupModalMenu)
+  el('overlay').addEventListener('click', tutupModalMenu)
+  el('tombolTambahMenu').addEventListener('click', () => bukaModalMenu(null))
+
+  el('formMenu').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const id = el('menuId').value
+    const body = {
+      nama: el('menuNama').value.trim(),
+      kategori: el('menuKategori').value,
+      deskripsi: el('menuDeskripsi').value.trim(),
+      harga: Number(el('menuHarga').value),
+    }
+    try {
+      if (id) await KB.api('/api/menu/' + id, { method: 'PATCH', body })
+      else await KB.api('/api/menu', { method: 'POST', body })
+      KB.toast('Menu tersimpan.', 'ok')
+      tutupModalMenu()
+      await muatMenu()
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  })
+
+  /* ---------------- meja ---------------- */
+  async function muatMeja() {
+    try {
+      const { meja } = await KB.api('/api/meja')
+      state.meja = meja
+      const asal = location.origin
+      el('gridMeja').innerHTML = meja
+        .map((m) => {
+          const url = asal + '/pesan?meja=' + encodeURIComponent(m.kode)
+          const qr = window.qrcodegen ? window.qrcodegen.buatQrSvg(url, 200) : ''
+          return `<div class="kartu-meja">
+            <h4>${esc(m.label)}</h4>
+            ${qr}
+            <div class="tautan">${esc(url)}</div>
+            <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+              <a class="btn btn-sm btn-ghost" href="${url}" target="_blank" rel="noopener">Buka</a>
+              <button class="btn btn-sm btn-ghost" data-aktif="${esc(m.kode)}">${m.aktif ? 'Nonaktifkan' : 'Aktifkan'}</button>
+            </div>
+          </div>`
+        })
+        .join('')
+
+      el('gridMeja').querySelectorAll('[data-aktif]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const m = state.meja.find((x) => x.kode === b.dataset.aktif)
+          b.disabled = true
+          try {
+            await KB.api('/api/meja/' + encodeURIComponent(m.kode), { method: 'PATCH', body: { aktif: !m.aktif } })
+            await muatMeja()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+
+      el('cetakQr').onclick = () => {
+        const jendela = window.open('', '_blank')
+        if (!jendela) return KB.toast('Izinkan jendela baru untuk mencetak.', 'error')
+        const kartu = meja
+          .filter((m) => m.aktif)
+          .map((m) => {
+            const url = asal + '/pesan?meja=' + encodeURIComponent(m.kode)
+            const qr = window.qrcodegen ? window.qrcodegen.buatQrSvg(url, 220) : ''
+            return `<div class="kartu"><h3>Kang Bahar Coffee</h3><div class="meja">${esc(m.label)}</div>${qr}<div class="url">${esc(url)}</div><p>Pindai untuk memesan dari meja ini</p></div>`
+          })
+          .join('')
+        jendela.document.write(`<html><head><title>QR Meja — Kang Bahar Coffee</title>
+          <style>
+            body{font-family:Georgia,serif;margin:24px;color:#3b241c}
+            .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+            .kartu{border:1px dashed #b99;border-radius:14px;padding:18px;text-align:center;page-break-inside:avoid}
+            h3{font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin:0}
+            .meja{font-size:26px;margin:6px 0}
+            svg{width:190px;height:190px}
+            .url{font-size:9px;color:#8a7365;word-break:break-all}
+            p{font-size:11px;color:#5b4136;margin:6px 0 0}
+          </style></head><body><div class="grid">${kartu}</div>
+          <script>window.onload=function(){window.print()}<\/script>
+          </body></html>`)
+        jendela.document.close()
+      }
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  }
+
+  el('formMeja').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const nomor = Number(el('nomorMeja').value)
+    if (!nomor) return KB.toast('Isi nomor meja.', 'error')
+    try {
+      await KB.api('/api/meja', { method: 'POST', body: { nomor } })
+      el('nomorMeja').value = ''
+      KB.toast('Meja ditambahkan.', 'ok')
+      await muatMeja()
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  })
+
+  /* ---------------- staf ---------------- */
+  async function muatStaf() {
+    try {
+      const { staf, kredensial, saya } = await KB.api('/api/staf/daftar')
+      state.kredensial = kredensial || []
+
+      el('tabelKredensial').innerHTML = state.kredensial.length
+        ? `<table class="tabel">
+            <thead><tr><th>Username</th><th>Nama</th><th>Peran</th><th>Dibuat</th><th>Aksi</th></tr></thead>
+            <tbody>${state.kredensial
+              .map(
+                (k) => `<tr>
+                  <td><strong>${esc(k.username)}</strong></td>
+                  <td>${esc(k.nama)}</td>
+                  <td><span class="badge ${k.peran === 'admin' ? 'badge-green' : 'badge-neutral'}">${esc(k.peran)}</span></td>
+                  <td class="muted">${new Date(k.dibuat).toLocaleDateString('id-ID')}</td>
+                  <td><div class="aksi">
+                    <button class="btn btn-sm btn-ghost" data-reset="${esc(k.username)}">Reset sandi</button>
+                    <button class="btn btn-sm btn-danger" data-hapus-kred="${esc(k.username)}">Hapus</button>
+                  </div></td>
+                </tr>`,
+              )
+              .join('')}</tbody></table>`
+        : '<p class="muted">Belum ada akun staf.</p>'
+
+      el('tabelKredensial').querySelectorAll('[data-reset]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const akun = state.kredensial.find((k) => k.username === b.dataset.reset)
+          const sandi = prompt('Kata sandi baru untuk ' + akun.username + ' (minimal 6 karakter):')
+          if (!sandi) return
+          if (sandi.length < 6) return KB.toast('Kata sandi minimal 6 karakter.', 'error')
+          b.disabled = true
+          try {
+            await KB.api('/api/staf/kredensial', {
+              method: 'POST',
+              body: { username: akun.username, nama: akun.nama, peran: akun.peran, password: sandi },
+            })
+            KB.toast('Kata sandi diperbarui. Sesi lama akun itu diakhiri.', 'ok')
+            await muatStaf()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+
+      el('tabelKredensial').querySelectorAll('[data-hapus-kred]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          if (!confirm('Hapus akun ' + b.dataset.hapusKred + '?')) return
+          b.disabled = true
+          try {
+            await KB.api('/api/staf/kredensial/hapus', { method: 'POST', body: { username: b.dataset.hapusKred } })
+            KB.toast('Akun staf dihapus.', 'ok')
+            await muatStaf()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+
+      el('tabelStaf').innerHTML = `<table class="tabel">
+        <thead><tr><th>Nama</th><th>Peran</th><th>Sejak</th><th>Aksi</th></tr></thead>
+        <tbody>${staf
+          .map(
+            (s) => `<tr>
+              <td><strong>${esc(s.nama || 'Tanpa nama')}</strong>${s.sub === saya ? ' <span class="badge badge-neutral">kamu</span>' : ''}</td>
+              <td><span class="badge ${s.peran === 'admin' ? 'badge-green' : 'badge-neutral'}">${esc(s.peran)}</span></td>
+              <td class="muted">${new Date(s.dibuat).toLocaleDateString('id-ID')}</td>
+              <td>${s.sub === saya ? '<span class="muted">&mdash;</span>' : `<button class="btn btn-sm btn-danger" data-hapus-staf="${esc(s.sub)}">Hapus</button>`}</td>
+            </tr>`,
+          )
+          .join('')}</tbody></table>`
+
+      el('tabelStaf').querySelectorAll('[data-hapus-staf]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          if (!confirm('Hapus akses staf ini?')) return
+          b.disabled = true
+          try {
+            await KB.api('/api/staf/hapus', { method: 'POST', body: { sub: b.dataset.hapusStaf } })
+            KB.toast('Akses staf dihapus.', 'ok')
+            await muatStaf()
+          } catch (err) {
+            KB.toast(err.message, 'error')
+            b.disabled = false
+          }
+        }),
+      )
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  }
+
+  el('formKredensial').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    try {
+      await KB.api('/api/staf/kredensial', {
+        method: 'POST',
+        body: {
+          username: el('kredUser').value.trim().toLowerCase(),
+          nama: el('kredNama').value.trim(),
+          password: el('kredPass').value,
+          peran: el('kredPeran').value,
+        },
+      })
+      KB.toast('Akun staf disimpan.', 'ok')
+      el('formKredensial').reset()
+      await muatStaf()
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  })
+
+  el('buatUndangan').addEventListener('click', async () => {
+    try {
+      const hasil = await KB.api('/api/staf/undangan', { method: 'POST', body: { peran: el('peranUndangan').value } })
+      el('hasilUndangan').innerHTML = `<div>
+        <div class="kode-undangan">${esc(hasil.kode)}</div>
+        <div class="muted" style="font-size:.8rem;margin-top:6px">Peran ${esc(hasil.peran)} · sekali pakai</div>
+      </div>`
+      KB.toast('Kode undangan dibuat.', 'ok')
+    } catch (err) {
+      KB.toast(err.message, 'error')
+    }
+  })
+
+  mulai()
+})()
+</script>
+</body>
+</html>
