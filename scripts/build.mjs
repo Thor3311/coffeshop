@@ -1,8 +1,16 @@
 import { build } from 'esbuild'
-import { mkdirSync } from 'node:fs'
+import { cpSync, mkdirSync, rmSync } from 'node:fs'
 
-mkdirSync('dist', { recursive: true })
-mkdirSync('public/assets', { recursive: true })
+// Halaman dan aset publik tinggal di root repo (agar GitHub Pages bisa menyajikannya
+// langsung). Worker tetap dilayani dari dist/, jadi berkas statis disalin ke dist/public.
+const HALAMAN = ['index.html', 'meja.html', 'pesan.html', 'pesanan.html', 'admin.html', 'barista.html']
+const ASET = ['style.css', 'app.js']
+
+rmSync('dist', { recursive: true, force: true })
+mkdirSync('dist/public/assets', { recursive: true })
+
+for (const berkas of HALAMAN) cpSync(berkas, `dist/public/${berkas}`)
+for (const berkas of ASET) cpSync(`assets/${berkas}`, `dist/public/assets/${berkas}`)
 
 await build({
   entryPoints: ['src/worker.js'],
@@ -16,10 +24,10 @@ await build({
   logLevel: 'info',
 })
 
-// QR encoder for the admin page (renders table QRs in the browser).
+// QR encoder untuk halaman admin (menggambar QR meja di browser).
 await build({
   entryPoints: ['src/vendor-qr.js'],
-  outfile: 'public/assets/qrcode.js',
+  outfile: 'dist/public/assets/qrcode.js',
   bundle: true,
   format: 'iife',
   globalName: 'qrcodegen',
@@ -27,4 +35,4 @@ await build({
   logLevel: 'info',
 })
 
-console.log('build selesai: dist/worker.js + public/assets/qrcode.js')
+console.log('build selesai: dist/worker.js + dist/public (halaman, style.css, app.js, qrcode.js)')

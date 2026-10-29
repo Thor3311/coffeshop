@@ -7,12 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css" />
+<link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 <header class="app-header">
   <div class="container">
-    <a href="/" class="brand" style="color:#fdf3e6">
+    <a href="index.html" class="brand" style="color:#fdf3e6">
       <svg viewBox="0 0 64 64" fill="none" style="width:38px;height:38px;color:#f6e3c8">
         <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
         <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
@@ -22,7 +22,7 @@
       <span class="brand-sub" style="font-size:1.05rem">Coffee</span></span>
     </a>
     <div class="kanan">
-      <a class="btn btn-sm btn-ghost" href="/" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)">Beranda</a>
+      <a class="btn btn-sm btn-ghost" href="index.html" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)">Beranda</a>
     </div>
   </div>
 </header>
@@ -49,11 +49,11 @@
 <footer class="site-footer">
   <div class="container footer-inner">
     <div class="copyright">&copy; 2026 Kang Bahar Coffee. All Rights Reserved.</div>
-    <div class="copyright"><a href="/admin">Portal staf</a></div>
+    <div class="copyright"><a href="admin.html">Portal staf</a></div>
   </div>
 </footer>
 
-<script src="/assets/app.js"></script>
+<script src="assets/app.js"></script>
 <script>
   (async function () {
     const wadah = document.getElementById('daftarMeja')
@@ -62,7 +62,7 @@
       wadah.innerHTML = meja
         .map(
           (m) => `
-        <a class="card" href="/pesan?meja=${encodeURIComponent(m.kode)}" style="display:block">
+        <a class="card" href="pesan.html?meja=${encodeURIComponent(m.kode)}" style="display:block">
           <div class="eyebrow" style="margin-bottom:6px">${esc(m.kode)}</div>
           <h3 style="font-size:1.3rem">${esc(m.label)}</h3>
           <p style="margin-top:6px">Pesan dari meja ini &rarr;</p>

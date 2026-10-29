@@ -7,13 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css" />
+<link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 
 <header class="app-header">
   <div class="container">
-    <a href="/" class="brand" style="color:#fdf3e6">
+    <a href="index.html" class="brand" style="color:#fdf3e6">
       <svg viewBox="0 0 64 64" fill="none" style="width:36px;height:36px;color:#f6e3c8">
         <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
         <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
@@ -181,8 +181,8 @@
   </div>
 </div>
 
-<script src="/assets/app.js"></script>
-<script src="/assets/qrcode.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/qrcode.js"></script>
 <script>
 (function () {
   const el = (id) => document.getElementById(id)
@@ -190,7 +190,7 @@
   const state = { sesi: null, tab: 'ringkasan', filter: 'aktif', menu: [], meja: [], kredensial: [], timer: null }
 
   function tombolKeluar() {
-    return `<a class="btn btn-sm btn-light" href="/barista">Papan barista</a>
+    return `<a class="btn btn-sm btn-light" href="barista.html">Papan barista</a>
       <button class="btn btn-sm btn-ghost" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)" id="tombolKeluar" type="button">Keluar</button>`
   }
 
@@ -274,7 +274,7 @@
       el('gerbang').innerHTML = s.adaAdmin
         ? `<h2 style="font-size:1.6rem">Akun belum terdaftar sebagai staf</h2>
            <p class="muted" style="margin:10px 0 18px">Minta kode undangan dari admin, lalu masukkan di halaman Papan Barista.</p>
-           <a class="btn btn-primary" href="/barista">Buka Papan Barista</a>`
+           <a class="btn btn-primary" href="barista.html">Buka Papan Barista</a>`
         : `<h2 style="font-size:1.6rem">Klaim akses admin pertama</h2>
            <p class="muted" style="margin:10px 0 18px">Belum ada staf terdaftar. Akun yang mengklaim sekarang menjadi admin utama kedai.</p>
            <button class="btn btn-primary" id="klaimAdmin">Klaim sebagai admin</button>`
@@ -304,7 +304,7 @@
       el('gerbang').classList.remove('hidden')
       el('gerbang').innerHTML = `<h2 style="font-size:1.6rem">Portal admin khusus admin</h2>
         <p class="muted" style="margin:10px 0 18px">Akunmu terdaftar sebagai barista. Gunakan Papan Barista untuk mengelola pesanan.</p>
-        <a class="btn btn-primary" href="/barista">Buka Papan Barista</a>`
+        <a class="btn btn-primary" href="barista.html">Buka Papan Barista</a>`
       return
     }
 

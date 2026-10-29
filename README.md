@@ -72,17 +72,33 @@ webhook status, dan mengganti tombol konfirmasi manual dengan status dari webhoo
 ```
 src/worker.js        API + auth + bootstrap skema/seed + penyajian aset
 src/vendor-qr.js     pembungkus pustaka QR untuk halaman admin
-public/index.html    landing page
-public/meja.html     pemilih meja
-public/pesan.html    menu, keranjang, checkout, pembayaran, status
-public/pesanan.html  pelacakan pesanan
-public/admin.html    portal admin
-public/barista.html  papan barista
-public/assets/       style.css, app.js, qrcode.js (hasil build)
-scripts/build.mjs    bundel esbuild
-deploy.json          manifest deploy Sites (worker + folder public)
+index.html           landing page
+meja.html            pemilih meja
+pesan.html           menu, keranjang, checkout, pembayaran, status
+pesanan.html         pelacakan pesanan
+admin.html           portal admin
+barista.html         papan barista
+assets/              style.css, app.js (sumber, dipakai apa adanya)
+scripts/build.mjs    bundel esbuild + salin halaman/aset ke dist/public
+deploy.json          manifest deploy Sites (worker + dist/public)
 wrangler.jsonc       konfigurasi dev lokal (binding DB, ASSETS, variabel auth)
 ```
+
+Halaman dan aset berada di root repo agar bisa disajikan langsung sebagai situs statis
+(GitHub Pages). `npm run build` menyalinnya ke `dist/public` untuk dilayani Worker, jadi tidak
+ada berkas ganda yang perlu disunting dua kali.
+
+## GitHub Pages
+
+Repo ini bisa langsung dipakai GitHub Pages dengan pengaturan **Settings → Pages →
+Deploy from a branch → `main` / `(root)`**. Halaman dan CSS memakai path relatif, sehingga tetap
+benar saat disajikan dari subfolder (`https://<user>.github.io/<repo>/`), dan `.nojekyll` membuat
+GitHub tidak memproses berkas lewat Jekyll.
+
+Batasannya jelas: GitHub Pages hanya menyajikan berkas statis, tanpa Worker dan D1. Di sana
+landing page tampil utuh (menu memakai kartu statis bawaan HTML), tetapi daftar meja, pemesanan,
+pelacakan, portal admin, dan papan barista memerlukan backend. Untuk alur yang hidup, pakai
+deploy Worker/Sites di bawah.
 
 ## Skema D1
 
@@ -125,6 +141,6 @@ di server; respons API memakai `Cache-Control: no-store`.
 
 ## Deploy
 
-Worker dibundel ke `dist/worker.js`, aset statis di `public/`. Manifest `deploy.json` dipakai
-oleh Sites (`assetsDirectory: ./public`, binding `DB`, variabel auth diisi otomatis saat deploy).
-`npm run build` harus dijalankan sebelum deploy.
+Worker dibundel ke `dist/worker.js`, aset statis hasil salin ada di `dist/public`. Manifest
+`deploy.json` dipakai oleh Sites (`assetsDirectory: ./dist/public`, binding `DB`, variabel auth
+diisi otomatis saat deploy). `npm run build` harus dijalankan sebelum deploy.

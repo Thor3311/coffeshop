@@ -8,5 +8,5 @@
       "path": "./dist/worker.js"
     }
   ],
-  "assetsDirectory": "./public"
+  "assetsDirectory": "./dist/public"
 }

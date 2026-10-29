@@ -7,13 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css" />
+<link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 
 <header class="app-header">
   <div class="container">
-    <a href="/" class="brand" style="color:#fdf3e6">
+    <a href="index.html" class="brand" style="color:#fdf3e6">
       <svg viewBox="0 0 64 64" fill="none" style="width:36px;height:36px;color:#f6e3c8">
         <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
         <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
@@ -64,7 +64,7 @@
   </div>
 </main>
 
-<script src="/assets/app.js"></script>
+<script src="assets/app.js"></script>
 <script>
 (function () {
   const el = (id) => document.getElementById(id)
@@ -162,7 +162,7 @@
            </form>`
         : `<h2 style="font-size:1.6rem">Belum ada admin</h2>
            <p class="muted" style="margin:10px 0 18px">Buka portal admin untuk mengklaim akses admin pertama, lalu buat kode undangan untuk barista.</p>
-           <a class="btn btn-primary" href="/admin">Buka portal admin</a>`
+           <a class="btn btn-primary" href="admin.html">Buka portal admin</a>`
       const form = el('formUndangan')
       if (form) {
         form.addEventListener('submit', async (e) => {
@@ -184,7 +184,7 @@
 
     el('statusSesi').textContent = 'Masuk sebagai ' + (sesi.nama || 'Staf') + ' · ' + sesi.peran
     el('aksiSesi').innerHTML =
-      (sesi.peran === 'admin' ? '<a class="btn btn-sm btn-light" href="/admin">Portal admin</a> ' : '') + tombolKeluar()
+      (sesi.peran === 'admin' ? '<a class="btn btn-sm btn-light" href="admin.html">Portal admin</a> ' : '') + tombolKeluar()
     pasangKeluar()
     el('gerbang').classList.add('hidden')
     el('papan').classList.remove('hidden')

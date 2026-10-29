@@ -7,13 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/style.css" />
+<link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 
 <header class="app-header">
   <div class="container">
-    <a href="/" class="brand" style="color:#fdf3e6">
+    <a href="index.html" class="brand" style="color:#fdf3e6">
       <svg viewBox="0 0 64 64" fill="none" style="width:38px;height:38px;color:#f6e3c8">
         <path d="M14 24h30v12a15 15 0 0 1-15 15h0a15 15 0 0 1-15-15V24Z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
         <path d="M44 28h4a7 7 0 0 1 0 14h-4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
@@ -22,7 +22,7 @@
       <span><span class="brand-name" style="font-size:1rem">Kang Bahar</span>
       <span class="brand-sub" style="font-size:1.05rem">Coffee</span></span>
     </a>
-    <div class="kanan"><a class="btn btn-sm btn-ghost" href="/meja" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)">Pesan lagi</a></div>
+    <div class="kanan"><a class="btn btn-sm btn-ghost" href="meja.html" style="color:#f3e3ce;border-color:rgba(243,227,206,.4)">Pesan lagi</a></div>
   </div>
 </header>
 
@@ -63,13 +63,13 @@
     <div id="galat" class="card hidden" style="max-width:480px;margin:30px auto;text-align:center">
       <h3>Pesanan tidak ditemukan</h3>
       <p class="muted" style="margin:8px 0 16px">Periksa kembali kode pesananmu.</p>
-      <a class="btn btn-primary" href="/pesanan">Cari kode lain</a>
+      <a class="btn btn-primary" href="pesanan.html">Cari kode lain</a>
     </div>
   </div>
 </main>
 
-<script src="/assets/app.js"></script>
-<script src="/assets/qrcode.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/qrcode.js"></script>
 <script>
 (function () {
   const params = new URLSearchParams(location.search)
@@ -86,7 +86,7 @@
       e.preventDefault()
       const nilai = el('inputKode').value.trim().toUpperCase()
       if (!nilai) return
-      location.href = '/pesanan?kode=' + encodeURIComponent(nilai)
+      location.href = 'pesanan.html?kode=' + encodeURIComponent(nilai)
     })
     return
   }
