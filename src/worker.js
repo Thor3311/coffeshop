@@ -109,7 +109,16 @@ let siapDb = false
 let authInstance
 let appInstance
 
+// Origin aplikasi: APP_ORIGIN bila diisi (wajib untuk Sign in with Freebuff),
+// kalau tidak dipakai origin request itu sendiri — cukup untuk cek same-origin dan cookie.
+function originApp(request, env) {
+  return env.APP_ORIGIN || new URL(request.url).origin
+}
+
+// Sign in with Freebuff hanya aktif bila variabelnya diisi. Di akun Cloudflare sendiri
+// staf tetap bisa masuk dengan username & kata sandi walau Freebuff tidak dikonfigurasi.
 function getAuth(env) {
+  if (!env.FREEBUFF_CLIENT_ID || !env.FREEBUFF_ISSUER || !env.APP_ORIGIN) return null
   authInstance ??= createFreebuffAuth({
     clientId: env.FREEBUFF_CLIENT_ID,
     issuer: env.FREEBUFF_ISSUER,
@@ -262,9 +271,9 @@ async function buatHashPassword(password) {
   return `pbkdf2$${iterasi}$${btoa(String.fromCharCode(...salt))}$${btoa(String.fromCharCode(...hash))}`
 }
 
-function headerSesi(env, token, umurDetik) {
+function headerSesi(request, env, token, umurDetik) {
   const bagian = [`kb_sesi=${token}`, 'Path=/', 'HttpOnly', 'SameSite=Lax', `Max-Age=${umurDetik}`]
-  if (env.APP_ORIGIN.startsWith('https://')) bagian.push('Secure')
+  if (originApp(request, env).startsWith('https://')) bagian.push('Secure')
   return bagian.join('; ')
 }
 
@@ -287,14 +296,15 @@ async function stafDari(request, env) {
     }
   }
 
-  const user = await getAuth(env).getUser(request)
+  const auth = getAuth(env)
+  const user = auth ? await auth.getUser(request) : null
   if (!user) return { user: null, staf: null }
   const staf = await env.DB.prepare('SELECT sub, nama, peran FROM staf WHERE sub = ?').bind(user.sub).first()
   return { user, staf }
 }
 
 function tolakAsal(request, env) {
-  if (!isSameOriginRequest(request, env.APP_ORIGIN)) {
+  if (!isSameOriginRequest(request, originApp(request, env))) {
     return json({ error: 'Permintaan lintas asal ditolak.' }, 403)
   }
   return null
@@ -667,9 +677,11 @@ async function stafEndpoint(request, env, segmen) {
   const adaAdminKred = await env.DB.prepare("SELECT COUNT(*) AS n FROM kredensial WHERE peran = 'admin'").first()
   const adaAdminTotal = (adaAdmin?.n || 0) + (adaAdminKred?.n || 0) > 0
 
+  const freebuff = Boolean(getAuth(env))
+
   if (segmen[0] === 'saya' && request.method === 'GET') {
-    if (!user) return json({ login: false, adaAdmin: adaAdminTotal })
-    if (!staf) return json({ login: true, terdaftar: false, adaAdmin: adaAdminTotal })
+    if (!user) return json({ login: false, adaAdmin: adaAdminTotal, freebuff })
+    if (!staf) return json({ login: true, terdaftar: false, adaAdmin: adaAdminTotal, freebuff })
     return json({
       login: true,
       terdaftar: true,
@@ -677,6 +689,7 @@ async function stafEndpoint(request, env, segmen) {
       nama: staf.nama || user.name || 'Staf',
       username: staf.username || null,
       via: viaPassword ? 'password' : 'freebuff',
+      freebuff,
     })
   }
 
@@ -723,7 +736,7 @@ async function stafEndpoint(request, env, segmen) {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
-        'Set-Cookie': headerSesi(env, token, UMUR_SESI / 1000),
+        'Set-Cookie': headerSesi(request, env, token, UMUR_SESI / 1000),
       },
     })
   }
@@ -740,7 +753,7 @@ async function stafEndpoint(request, env, segmen) {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
-        'Set-Cookie': headerSesi(env, '', 0),
+        'Set-Cookie': headerSesi(request, env, '', 0),
       },
     })
   }
@@ -976,8 +989,9 @@ async function handle(request, env) {
 
 export default {
   fetch(request, env) {
-    authInstance ??= getAuth(env)
-    appInstance ??= authInstance.wrap(handle)
+    const auth = getAuth(env)
+    if (!auth) return handle(request, env)
+    appInstance ??= auth.wrap(handle)
     return appInstance(request, env)
   },
 }

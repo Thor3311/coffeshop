@@ -3,21 +3,31 @@
   "name": "kang-bahar-coffee",
   "main": "dist/worker.js",
   "compatibility_date": "2026-09-01",
+  // Hasil `npm run build`: worker + halaman HTML/CSS dari root yang disalin ke dist/public.
   "assets": {
     "directory": "./dist/public",
     "binding": "ASSETS",
     "run_worker_first": true
   },
-  "vars": {
-    "FREEBUFF_CLIENT_ID": "09b0f2f2-a903-44f9-899d-0707c38d6040",
-    "FREEBUFF_ISSUER": "https://freebuff.com/oidc",
-    "APP_ORIGIN": "http://localhost:8787"
+  "observability": {
+    "enabled": true
   },
+  // Dijalankan sekali: npm run db:create
+  // Perintah itu membuat database D1 di akunmu dan langsung mengisi database_id di bawah.
+  // `npm run deploy` akan gagal selama id ini masih bernilai nol.
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "kang-bahar",
       "database_id": "00000000-0000-0000-0000-000000000000"
     }
-  ]
+  ],
+  // Isi dengan origin publik Worker-mu setelah deploy pertama, misalnya
+  // "https://kang-bahar-coffee.namamu.workers.dev" (atau domain sendiri).
+  // Boleh dibiarkan kosong: origin lalu diambil dari request, tetap aman untuk satu domain.
+  "vars": {
+    "APP_ORIGIN": ""
+  }
+  // Domain sendiri: buka setelah worker aktif, lalu deploy ulang.
+  // "routes": [{ "pattern": "kopi.domainmu.com", "custom_domain": true }]
 }

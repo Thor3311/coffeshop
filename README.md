@@ -18,9 +18,10 @@ npm run dev          # http://localhost:8787
 `npm run dev` memakai D1 lokal (`.wrangler/state`). Skema dan data awal (12 menu, 10 meja)
 dibuat otomatis saat request API pertama.
 
-Login lokal memakai client ID pengembangan yang sudah didaftarkan untuk
-`http://localhost:8787/auth/freebuff/callback`. Jangan mengganti `APP_ORIGIN` ke `127.0.0.1`
-saat menguji login: cookie OIDC terikat pada origin `localhost`.
+`APP_ORIGIN` boleh dibiarkan kosong di lokal: origin lalu diambil dari request, jadi login
+username/kata sandi di `http://localhost:8787/admin` langsung berjalan tanpa variabel tambahan.
+Sign in with Freebuff tidak aktif bila `FREEBUFF_CLIENT_ID`/`FREEBUFF_ISSUER` tidak diisi, dan
+itu tidak menghalangi login staf.
 
 ## Peran staf
 
@@ -40,8 +41,10 @@ kode halaman maupun di body respons. Sesi memakai token acak 256-bit yang di-has
 dikirim sebagai cookie `HttpOnly; SameSite=Lax` (plus `Secure` di HTTPS) dan berlaku 12 jam.
 Login dibatasi 8 percobaan gagal per 10 menit untuk setiap kombinasi IP dan username.
 
-Jalur **Sign in with Freebuff** tetap tersedia sebagai opsi: admin dapat membuat kode undangan
-sekali pakai untuk staf yang lebih suka memakai akun Freebuff.
+Jalur **Sign in with Freebuff** tetap tersedia sebagai opsi (admin dapat membuat kode undangan
+sekali pakai untuk staf yang lebih suka memakai akun Freebuff), tetapi hanya hidup bila
+`FREEBUFF_CLIENT_ID`, `FREEBUFF_ISSUER`, dan `APP_ORIGIN` diisi. Di akun Cloudflare sendiri
+jalur ini mati secara default — login username/kata sandi tetap penuh berfungsi.
 
 Hak akses ditegakkan di server pada setiap endpoint (`/api/pesanan`, `/api/ringkasan`,
 `/api/menu`, `/api/meja`, `/api/staf/*`), bukan hanya disembunyikan di UI.
@@ -81,7 +84,7 @@ barista.html         papan barista
 assets/              style.css, app.js (sumber, dipakai apa adanya)
 scripts/build.mjs    bundel esbuild + salin halaman/aset ke dist/public
 deploy.json          manifest deploy Sites (worker + dist/public)
-wrangler.jsonc       konfigurasi dev lokal (binding DB, ASSETS, variabel auth)
+wrangler.jsonc       konfigurasi Worker: binding DB/ASSETS, APP_ORIGIN, dev lokal + deploy
 ```
 
 Halaman dan aset berada di root repo agar bisa disajikan langsung sebagai situs statis
@@ -139,8 +142,90 @@ Harga dan total selalu dihitung ulang di server dari tabel `menu`, bukan dari bo
 Semua request yang mengubah data wajib same-origin (`isSameOriginRequest`) dan diperiksa ulang
 di server; respons API memakai `Cache-Control: no-store`.
 
-## Deploy
+## Deploy ke akun Cloudflare sendiri
 
-Worker dibundel ke `dist/worker.js`, aset statis hasil salin ada di `dist/public`. Manifest
-`deploy.json` dipakai oleh Sites (`assetsDirectory: ./dist/public`, binding `DB`, variabel auth
-diisi otomatis saat deploy). `npm run build` harus dijalankan sebelum deploy.
+Yang dibutuhkan: Node 18+, akun Cloudflare (paket gratis cukup), dan `npm install` sekali.
+
+### 1. Masuk ke akun Cloudflare
+
+```bash
+npm run login          # membuka browser: pilih akun → Allow
+npx wrangler whoami    # memastikan akun & izin terbaca
+```
+
+### 2. Buat database D1 (sekali saja)
+
+```bash
+npm run db:create
+```
+
+Perintah itu menjalankan `wrangler d1 create kang-bahar --binding DB --update-config --location apac`,
+sehingga database `kang-bahar` dibuat di akunmu dan `database_id` di `wrangler.jsonc` langsung
+terisi. Kalau database sudah ada, perintah berhenti dengan pesan *already exists* — ambil id-nya
+di dashboard (**D1 → kang-bahar → UUID**) dan tempel ke `d1_databases[0].database_id`.
+
+### 3. Deploy
+
+```bash
+npm run deploy         # build halaman + worker, lalu wrangler deploy
+```
+
+URL pertama muncul di akhir output, bentuknya
+`https://kang-bahar-coffee.<subdomain>.workers.dev`.
+
+### 4. Isi `APP_ORIGIN` lalu deploy ulang
+
+Salin origin dari langkah 3 ke `vars.APP_ORIGIN` di `wrangler.jsonc`, misalnya
+`"https://kang-bahar-coffee.namamu.workers.dev"`, lalu `npm run deploy` sekali lagi.
+Dengan begitu cookie sesi dikirim dengan atribut `Secure` dan pemeriksaan same-origin memakai
+origin tetap, bukan header dari request.
+
+### 5. Database terisi otomatis
+
+Tidak ada migrasi manual: request API pertama membuat tabel, 12 menu, 10 meja, dan akun admin
+bawaan. Bukti cepat:
+
+```bash
+curl https://<worker-mu>/api/menu
+```
+
+Kalau JSON berisi 12 menu, database siap. Halaman `https://<worker-mu>/admin` sudah bisa dibuka
+saat itu juga.
+
+### 6. Masuk admin dan ganti kata sandi
+
+Buka `/admin`, masuk dengan `adminkang` dan kata sandi bawaan, lalu **Staf → Reset sandi**.
+Lakukan sebelum URL dibagikan: kata sandi bawaan ada di kode sumber repositori ini, jadi siapa
+pun yang tahu nilainya punya akses admin penuh. Setelah itu buat akun barista di **Staf →
+Akun staf**.
+
+### 7. Domain sendiri (opsional)
+
+Dashboard: **Workers & Pages → kang-bahar-coffee → Settings → Domains & Routes → Add →
+Custom domain**. Atau di `wrangler.jsonc`:
+
+```jsonc
+"routes": [{ "pattern": "kopi.domainmu.com", "custom_domain": true }]
+```
+
+lalu `npm run deploy`. Domain harus memakai nameserver Cloudflare (gratis). Setelah domain aktif,
+ubah `APP_ORIGIN` ke `https://kopi.domainmu.com` dan deploy ulang agar cookie mengikuti domain itu.
+
+### Memperbarui dan merawat
+
+```bash
+npm run deploy         # setiap kali kode berubah
+npm run logs           # log real-time Worker
+```
+
+- **Biaya**: paket gratis Worker (100.000 request/hari) dan D1 (5 GB) jauh lebih dari cukup untuk
+  satu kedai; keduanya tidak perlu kartu kredit.
+- **Menghapus**: `npx wrangler delete kang-bahar-coffee` lalu `npx wrangler d1 delete kang-bahar`.
+- **Test tanpa mengunggah**: `npx wrangler deploy --dry-run --outdir /tmp/kb` membaca konfigurasi
+  dan seluruh aset tanpa menyentuh akun.
+
+### Deploy lewat Sites (preview Freebuff)
+
+Manifest `deploy.json` tetap ada (`entrypoint: worker.js`, `assetsDirectory: ./dist/public`).
+Sites mengisi binding `DB` dan variabel auth secara otomatis, jadi `npm run build` lalu deploy
+lewat alat Sites — tidak perlu D1 sendiri.

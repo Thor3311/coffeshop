@@ -7,7 +7,10 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "npm run build && wrangler dev",
-    "db:local": "wrangler d1 execute kang-bahar --local --file=db/schema.sql"
+    "login": "wrangler login",
+    "db:create": "wrangler d1 create kang-bahar --binding DB --update-config --location apac",
+    "deploy": "npm run build && wrangler deploy",
+    "logs": "wrangler tail"
   },
   "dependencies": {
     "@freebuff/auth": "^0.1.0",

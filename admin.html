@@ -227,8 +227,8 @@
         <label class="field">Kata sandi<input type="password" id="loginPass" autocomplete="current-password" required /></label>
         <button class="btn btn-primary btn-block" type="submit" id="tombolMasuk">Masuk</button>
       </form>
-      <p class="muted" style="font-size:.82rem;margin-top:14px">Staf yang diundang lewat Freebuff?
-        <a href="/auth/freebuff/signin?returnTo=/admin" style="text-decoration:underline">Masuk dengan Freebuff</a>.</p>`
+      ${state.sesi?.freebuff ? `<p class="muted" style="font-size:.82rem;margin-top:14px">Staf yang diundang lewat Freebuff?
+        <a href="/auth/freebuff/signin?returnTo=/admin" style="text-decoration:underline">Masuk dengan Freebuff</a>.</p>` : ''}`
     el('formMasuk').addEventListener('submit', async (e) => {
       e.preventDefault()
       const tombol = el('tombolMasuk')
